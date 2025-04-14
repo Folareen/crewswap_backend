@@ -4,7 +4,7 @@ import User from "../../models/User"
 import { Request, Response } from "express"
 import validateSignup from '../../utils/validators/auth/signup'
 
-export const signup = async (req: Request, res: Response) => {
+export default async (req: Request, res: Response) => {
     try {
         const data = validateSignup(req.body)
 
