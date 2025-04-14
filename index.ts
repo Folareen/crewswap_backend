@@ -1,10 +1,11 @@
-import cors from 'cors';
 import dotenv from 'dotenv';
+dotenv.config()
+
+import cors from 'cors';
 import express from "express";
 import notFound from "./src/middlewares/notFound";
 import authRouter from './src/routes/auth';
 
-dotenv.config()
 
 const app = express();
 app.use(express.json());

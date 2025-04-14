@@ -2,7 +2,7 @@ import { Dialect, Sequelize } from "sequelize";
 
 const { DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_DIALECT } = process.env;
 
-if (!DB_NAME || !DB_USER || !DB_PASSWORD || !DB_HOST || DB_DIALECT) {
+if (!DB_NAME || !DB_USER || !DB_PASSWORD || !DB_HOST || !DB_DIALECT) {
     throw new Error('Missing database configuration in environment variables');
 }
 
