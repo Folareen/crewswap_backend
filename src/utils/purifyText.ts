@@ -1,0 +1,1 @@
+export default (text: string) => text.replace(/^\s+|\s+$|\s+(?=\s)/g, "")
