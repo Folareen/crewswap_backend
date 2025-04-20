@@ -4,6 +4,6 @@ import authenticate from "../middlewares/authenticate";
 
 const router = Router()
 
-router.post('/sync-schedule', authenticate, syncSchedule)
+router.route('/schedule').post(authenticate, syncSchedule)
 
 export default router
