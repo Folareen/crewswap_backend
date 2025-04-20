@@ -23,7 +23,7 @@ const User = sequelizeInstance.define('User', {
     airline: {
         type: DataTypes.STRING,
     },
-    pilotOrFlightAttendant: {
+    userType: {
         type: DataTypes.ENUM('pilot', 'flightAttendant'),
         allowNull: false,
     }

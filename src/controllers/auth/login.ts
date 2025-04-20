@@ -33,7 +33,7 @@ export default async (req: Request, res: Response) => {
             id: user.getDataValue("id"),
             email: user.getDataValue("email"),
             displayName: user.getDataValue("displayName"),
-            role: user.getDataValue("pilotOrFlightAttendant"),
+            userType: user.getDataValue("userType"),
         }
 
         const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string, {

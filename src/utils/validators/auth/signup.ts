@@ -21,8 +21,8 @@ const signupSchema = z.object({
         .min(1, "Base airport is required"),
     airline: z.string({ required_error: "Airline is required" })
         .min(1, "Airline is required"),
-    pilotOrFlightAttendant: z.enum(["pilot", "flightAttendant"], {
-        errorMap: () => ({ message: "Must be either 'pilot' or 'flightAttendant'" }),
+    userType: z.enum(["pilot", "flightAttendant"], {
+        errorMap: () => ({ message: "User type must be either 'pilot' or 'flightAttendant'" }),
     }),
 })
 
