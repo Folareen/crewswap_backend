@@ -9,11 +9,7 @@ const Schedule = sequelizeInstance.define("Schedule", {
     data: {
         type: DataTypes.JSON,
         allowNull: false
-    },
-    lastSynced: {
-        type: DataTypes.DATE,
-        allowNull: false
-    },
+    }
 }, {
     timestamps: true
 })

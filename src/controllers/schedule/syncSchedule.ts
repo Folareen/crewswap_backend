@@ -2,13 +2,16 @@ import * as cheerio from "cheerio";
 import { Request, Response } from "express";
 import Schedule from "../../models/Schedule";
 import purifyText from "../../utils/purifyText";
+import User from "../../models/User";
 
 // flight duty limits pending
 // tcrd -- credit time
 // tblk - total block time
 
-export default async (req: Request, res: Response) => {
+export default async (req: Request & { user?: any }, res: Response) => {
     try {
+        const userId = req?.user?.id
+
         const htmlContent = req.body.htmlContent
         if (!htmlContent) {
             throw new Error('Invalid html content')
@@ -160,7 +163,17 @@ export default async (req: Request, res: Response) => {
             scheduleData.schedules[scheduleIndex].hotel = hotel
         })
 
-        await Schedule.create({ userId: 12, data: scheduleData, lastSynced: Date.now() })
+        const existingSchedule = await Schedule.findOne({ where: { userId } })
+
+        if (existingSchedule) {
+            await Schedule.update({ userId, data: scheduleData }, {
+                where: {
+                    userId
+                }
+            })
+        } else {
+            await Schedule.create({ userId, data: scheduleData })
+        }
 
         const scrapedData = JSON.stringify(scheduleData)
 
