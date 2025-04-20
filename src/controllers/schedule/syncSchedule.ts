@@ -3,12 +3,13 @@ import { Request, Response } from "express";
 import Schedule from "../../models/Schedule";
 import purifyText from "../../utils/purifyText";
 import User from "../../models/User";
+import { AuthenticatedReq } from "../../types/authenticatedReq";
 
 // flight duty limits pending
 // tcrd -- credit time
 // tblk - total block time
 
-export default async (req: Request & { user?: any }, res: Response) => {
+export default async (req: AuthenticatedReq, res: Response) => {
     try {
         const userId = req?.user?.id
 
