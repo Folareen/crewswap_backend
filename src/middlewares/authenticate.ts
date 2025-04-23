@@ -24,7 +24,11 @@ const authenticate = async (req: Request & { user?: any }, res: Response, next: 
 
         const user = await User.findOne({ where: { id: decodedUser.id } })
 
-        req.user = user
+        const userObj = user?.dataValues
+
+        delete userObj.password
+
+        req.user = userObj
 
         next()
     } catch (error: any) {
