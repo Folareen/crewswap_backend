@@ -6,6 +6,7 @@ import express from "express";
 import notFound from "./src/middlewares/notFound";
 import authRouter from './src/routes/auth';
 import scheduleRouter from './src/routes/schedule'
+import userRouter from './src/routes/user'
 import sequelizeInstance from './src/config/database';
 
 const app = express();
@@ -14,6 +15,7 @@ app.use(cors());
 
 app.use('/api/v1/', authRouter)
 app.use('/api/v1/', scheduleRouter)
+app.use('/api/v1/', userRouter)
 
 app.use(notFound)
 
