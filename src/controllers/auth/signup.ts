@@ -3,17 +3,28 @@ import jwt from "jsonwebtoken"
 import User from "../../models/User"
 import { Request, Response } from "express"
 import validateSignup from '../../utils/validators/auth/signup'
+import scrapeFlicaSchedule from "../../utils/scrapeFlicaSchedule"
+import Schedule from "../../models/Schedule"
+import Preference from "../../models/Preference"
+
+// validate requestsss
 
 export default async (req: Request, res: Response) => {
     try {
-        const data = validateSignup(req.body)
+        console.log(req.body.data, 'seee this')
+        // const data = validateSignup(req.body)
+        const userDetails = req.body.data.userDetails
+        const preferences = req.body.data.preferences
+        const flicaContent = req.body.data.flicaContent
 
-        if (!data) {
+        // const data = req.body
+
+        if (!userDetails) {
             res.status(400).json({ message: 'Invalid signup data' })
             return;
         }
 
-        const { email, password } = data
+        const { email, password } = userDetails
 
         const existingUser = await User.findOne({ where: { email: email } })
         if (existingUser) {
@@ -24,7 +35,7 @@ export default async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(password, 10)
 
         const user = await User.create({
-            ...data,
+            ...userDetails,
             password: hashedPassword,
         })
 
@@ -42,10 +53,22 @@ export default async (req: Request, res: Response) => {
         const userJson = user.toJSON()
         delete userJson.password
 
+        let scheduleData = null
+
+        if (flicaContent) {
+            scheduleData = await scrapeFlicaSchedule(flicaContent)
+            await Schedule.create({ userId: userJson.id, data: scheduleData })
+        }
+
+        const preferenceResponse = await Preference.create({
+            ...preferences, userId: userJson.id
+        })
+
         res.status(201).json({
             message: "Signup successful",
             user: userJson,
             token,
+            schedule: scheduleData
         })
         return;
     } catch (error: any) {
