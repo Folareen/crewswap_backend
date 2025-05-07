@@ -36,9 +36,7 @@ export default async (req: Request, res: Response) => {
             userType: user.getDataValue("userType"),
         }
 
-        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string, {
-            expiresIn: "7d",
-        })
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string)
 
         const userJson = user.toJSON()
         delete userJson.password
