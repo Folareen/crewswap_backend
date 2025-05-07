@@ -1,8 +1,5 @@
-import * as cheerio from "cheerio";
-import { Request, Response } from "express";
+import { Response } from "express";
 import Schedule from "../../models/Schedule";
-import purifyText from "../../utils/purifyText";
-import User from "../../models/User";
 import { AuthenticatedReq } from "../../types/authenticatedReq";
 import scrapeFlicaSchedule from "../../utils/scrapeFlicaSchedule";
 
