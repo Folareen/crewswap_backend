@@ -39,6 +39,8 @@ export default async (req: AuthenticatedReq, res: Response) => {
             }
         })
 
+        // modify schedules with the preferences before sending them!!!!!!
+
         const preferredSchedules = await Promise.all(matchingPreferences.map(async (preference) => {
             return Schedule.findOne({ where: { userId: preference.dataValues.userId } })
         }))
