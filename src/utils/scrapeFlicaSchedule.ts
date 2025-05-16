@@ -6,8 +6,6 @@ export default async (flicaContent: string, userId: number) => {
 
     const $ = cheerio.load(flicaContent);
 
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
     const scheduleData: { schedules: any[], overview: any } = { schedules: [], overview: {} }
 
     $('[name="table2"] > tbody > tr[align="center"]').each((ind, row) => {
@@ -155,9 +153,9 @@ export default async (flicaContent: string, userId: number) => {
 
     const schedules = weeklySchedules.flat()
 
-    const stats = {
+    // const stats = {
 
-    }
+    // }
 
     schedules.forEach(({ dy, dd, flights, hotel }) => {
         const scheduleIndex = scheduleData.schedules.findIndex((schedule) => schedule.dy == dy && schedule.dd == dd)
@@ -166,7 +164,7 @@ export default async (flicaContent: string, userId: number) => {
 
         scheduleData.schedules[scheduleIndex].flights = flights
         scheduleData.schedules[scheduleIndex].hotel = hotel
-        scheduleData.schedules[scheduleIndex].stats = stats
+        // scheduleData.schedules[scheduleIndex].stats = stats
     })
 
 
