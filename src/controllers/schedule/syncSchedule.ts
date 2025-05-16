@@ -16,7 +16,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
             throw new Error('Invalid html content')
         }
 
-        const scheduleData = await scrapeFlicaSchedule(flicaContent)
+        const scheduleData = await scrapeFlicaSchedule(flicaContent, Number(userId))
 
         const existingSchedule = await Schedule.findOne({ where: { userId } })
 

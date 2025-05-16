@@ -54,7 +54,7 @@ export default async (req: Request, res: Response) => {
         let scheduleData = null
 
         if (flicaContent) {
-            scheduleData = await scrapeFlicaSchedule(flicaContent)
+            scheduleData = await scrapeFlicaSchedule(flicaContent, userJson.id)
             await Schedule.create({ userId: userJson.id, data: scheduleData })
         }
 
