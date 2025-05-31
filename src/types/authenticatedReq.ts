@@ -2,11 +2,14 @@ import { Request } from "express";
 
 export type AuthenticatedReq = Request & {
     user?: {
-        id: string,
+        id: number,
         email: string,
-        displayName: string,
+        firstName: string,
+        lastName: string,
         baseAirport: string,
         airline: string,
-        userType: string
+        userType: string,
+        position: string,
+        timeFormat: string,
     }
 }

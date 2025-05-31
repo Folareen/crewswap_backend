@@ -28,24 +28,30 @@ export default async (req: AuthenticatedReq, res: Response) => {
         delete userPreferenceObj.updatedAt
         delete userPreferenceObj.id
 
-        if (userPreferenceObj.datesOff.length == 0) {
-            delete userPreferenceObj.datesOff
+        const oppositeConditions = Object.entries(userPreferenceObj)
+            .filter(([_, value]) => typeof value === 'boolean')
+            .map(([key, value]) => ({
+                [key]: !value
+            }))
+
+        if (userPreferenceObj.datesOff && userPreferenceObj.datesOff.length > 0) {
+            oppositeConditions.push({ datesOff: userPreferenceObj.datesOff })
         }
 
         const matchingPreferences = await Preference.findAll({
             where: {
-                ...userPreferenceObj,
+                [Op.or]: oppositeConditions,
                 userId: { [Op.ne]: userId }
             }
         })
 
-        // modify schedules with the preferences before sending them!!!!!!
+
 
         const preferredSchedules = await Promise.all(matchingPreferences.map(async (preference) => {
             return Schedule.findOne({ where: { userId: preference.dataValues.userId } })
         }))
 
-        if (!preferredSchedules) {
+        if (!preferredSchedules || preferredSchedules.length === 0) {
             res.status(400).json({ message: 'No preferred schedules found' })
             return
         }

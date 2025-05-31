@@ -1,4 +1,5 @@
 
+
 import { Response } from "express";
 import { Op } from "sequelize";
 import Chat, { ChatType } from "../../models/Chat";
@@ -14,13 +15,17 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
         const chats = await Chat.findAll({
             where: {
-                type: ChatType.SWAP_BUDDIES,
+                type: {
+                    [Op.or]: [
+                        ChatType.CREW,
+                        ChatType.CREW_GROUP
+                    ]
+                },
                 [Op.or]: [
                     {
-                        member1: userId,
-                    },
-                    {
-                        member2: userId
+                        members: {
+                            [Op.contains]: userId
+                        }
                     }
                 ]
             },

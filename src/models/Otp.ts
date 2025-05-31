@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize"
 import sequelizeInstance from "../config/database"
 
 export enum ActionType {
-    PASSWORD_RESET = "password_reset",
+    PASSWORD_RESET = "password-reset",
 }
 
 const Otp = sequelizeInstance.define("OTP", {

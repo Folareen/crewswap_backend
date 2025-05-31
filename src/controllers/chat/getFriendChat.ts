@@ -15,7 +15,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
         const chat = await Chat.findOne({
             where: {
-                type: ChatType.SWAP_BUDDIES,
+                type: ChatType.FRIENDS,
                 id: chatId,
                 [Op.or]: [
                     {

@@ -2,6 +2,7 @@ import { Response } from "express";
 import Schedule from "../../models/Schedule";
 import { AuthenticatedReq } from "../../types/authenticatedReq";
 import scrapeFlicaSchedule from "../../utils/scrapeFlicaSchedule";
+import scrapeFlicaUserDetails from "../../utils/scrapeFlicaUserDetails";
 
 // flight duty limits pending
 // tcrd -- credit time
@@ -15,6 +16,8 @@ export default async (req: AuthenticatedReq, res: Response) => {
         if (!flicaContent) {
             throw new Error('Invalid html content')
         }
+
+        const userDetails = await scrapeFlicaUserDetails(flicaContent)
 
         const scheduleData = await scrapeFlicaSchedule(flicaContent, Number(userId))
 

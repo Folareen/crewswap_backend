@@ -14,7 +14,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
         const chats = await Chat.findAll({
             where: {
-                type: ChatType.SWAP_BUDDIES,
+                type: ChatType.FRIENDS,
                 [Op.or]: [
                     {
                         member1: userId,
@@ -24,22 +24,8 @@ export default async (req: AuthenticatedReq, res: Response) => {
                     }
                 ]
             },
-            order: [['createdAt', 'DESC']],
-            include: [
-                {
-                    model: User,
-                    as: 'memberOne',
-                    attributes: ['id', 'firstName', 'lastName']
-                },
-                {
-                    model: User,
-                    as: 'memberTwo',
-                    attributes: ['id', 'firstName', 'lastName']
-                }
-            ]
+            order: [['createdAt', 'DESC']]
         })
-
-        console.log(chats, 'chats')
 
         const lastMessage = await Message.findOne({
             where: {

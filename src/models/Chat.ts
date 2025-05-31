@@ -1,15 +1,19 @@
 import { DataTypes } from "sequelize";
 import sequelizeInstance from "../config/database";
-import Message from "./Message";
 
 export enum ChatType {
-    SWAP_BUDDIES = 'swap_buddies',
+    SWAP_BUDDIES = 'swap-buddies',
     CREW = 'crew',
-    CREW_GROUP = 'crew_group',
+    CREW_GROUP = 'crew-group',
     FRIENDS = 'friends',
 }
 
 const Chat = sequelizeInstance.define('Chat', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+    },
     type: {
         type: DataTypes.ENUM(...Object.values(ChatType)),
         allowNull: false,
@@ -17,31 +21,24 @@ const Chat = sequelizeInstance.define('Chat', {
     member1: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        // references: {
-        //     model: 'Users',
-        //     key: 'id'
-        // }
     },
     member2: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        // references: {
-        //     model: 'Users',
-        //     key: 'id'
-        // }
     },
+    members: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: []
+    },
+    name: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null
+    }
 }, {
     timestamps: true
 })
 
-// Chat.hasMany(Message, {
-//     foreignKey: 'chatId',
-//     as: 'messages'
-// })
-
-// Message.belongsTo(Chat, {
-//     foreignKey: 'chatId',
-//     as: 'chat'
-// })
 
 export default Chat;

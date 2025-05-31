@@ -1,32 +1,29 @@
+// models/Message.ts
 import { DataTypes } from "sequelize";
 import sequelizeInstance from "../config/database";
 
 const Message = sequelizeInstance.define('Message', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
     chatId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        // references: {
-        //     model: 'Chat',
-        //     key: 'id'
-        // }
+        allowNull: false
     },
     senderId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        // references: {
-        //     model: 'User',
-        //     key: 'id'
-        // }
+        allowNull: false
     },
-    message: {
-        type: DataTypes.STRING,
+    text: {
+        type: DataTypes.TEXT,
         allowNull: false
     },
     read: {
         type: DataTypes.BOOLEAN,
-        allowNull: false,
         defaultValue: false
-    }
+    },
 }, {
     timestamps: true
 })

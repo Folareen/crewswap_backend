@@ -68,15 +68,46 @@ export default async (flicaContent: string, userId: number) => {
     $('[name="table4"] > tbody > tr > td > table:not([name="headertable"]) > tbody > tr:last-child').each((ind, row) => {
         const crews: any[] = []
         $(row).find('tbody > tr').each((ind, rw) => {
-            const crewName = purifyText($(rw).text())
-            if (crewName == '' || crewName == 'Crew:') {
+            let rawCrewName = purifyText($(rw).text())
+            if (rawCrewName == '' || rawCrewName == 'Crew:') {
                 return
             }
-            crews.push(crewName)
+
+            if (
+                (rawCrewName.match(/(CA|FO|FA)\s+/g) || []).length > 1
+            ) {
+                const crewArray = rawCrewName.match(/(CA|FO|FA)\s+\d+.*?(?=(CA|FO|FA)\s+\d+|$)/g);
+                if (crewArray) {
+                    crewArray.forEach(c => crews.push(c.trim()));
+                }
+            } else {
+                crews.push(rawCrewName)
+            }
         })
 
         allCrews.push(crews)
     })
+
+
+    const tripStats: any[] = []
+
+    $('[name="table4"] > tbody > tr > td > table:not([name="headertable"])').each((index, row) => {
+
+        $(row).find('tr.bold').each((_, row) => {
+            const columns = $(row).find('td');
+
+            const total = {
+                tripBLKT: purifyText($(columns[2]).text()),
+                tripCRD: purifyText($(columns[5]).text()),
+            }
+
+            // console.log(total, 'total')
+
+            tripStats.push(total)
+        })
+
+    })
+    // console.log(tripStats, 'tripStats')
 
     const weeklySchedules: any[] = []
 
@@ -110,10 +141,14 @@ export default async (flicaContent: string, userId: number) => {
                 depl: purifyText($(columns[6]).text()),
                 arrl: purifyText($(columns[7]).text()),
                 blkt: purifyText($(columns[8]).text()),
-                grnt: Number(purifyText($(columns[9]).text())) > 45 ? Number(purifyText($(columns[9]).text())) - 45 : 0,
+                grnt: Number(purifyText($(columns[9]).text())),
                 report: Number(purifyText($(columns[6]).text())) - 45,
                 crew: allCrews[index],
-                layover: purifyText($(columns[colsLength - 1]).text()).split(' ')[1]
+                layover: purifyText($(columns[colsLength - 1]).text()).split(' ')[1],
+                tblk: purifyText($(columns[12]).text()),
+                tcrd: purifyText($(columns[15]).text()),
+                tdhd: purifyText($(columns[16]).text()).split('/')[0],
+                tduty: purifyText($(columns[16]).text()).split('/')[1],
             };
 
             flights.push(flight);
@@ -140,31 +175,59 @@ export default async (flicaContent: string, userId: number) => {
             });
         }
 
-        const finalWeeklySchedule = weeklySchedule.map((schedule, index) => (
-            {
+        const finalWeeklySchedule = weeklySchedule.map((schedule, index) => {
+            return {
                 ...schedule,
-                hotel: hotels[index]
+                hotel: hotels[index],
             }
-        ))
-
+        })
 
         weeklySchedules.push(finalWeeklySchedule)
     })
 
     const schedules = weeklySchedules.flat()
 
-    // const stats = {
-
-    // }
-
     schedules.forEach(({ dy, dd, flights, hotel }) => {
         const scheduleIndex = scheduleData.schedules.findIndex((schedule) => schedule.dy == dy && schedule.dd == dd)
 
+        // console.log(tripStats, 'tripStats')
+
         if (scheduleIndex == -1) return;
+
+        flights?.forEach((flight: any, index: number) => {
+            // console.log(flight, 'flight')
+            delete flight.tblk
+            delete flight.tcrd
+            delete flight.tduty
+
+            // flight.tripBLKT = tripStats[0]?.tripBLKT
+            // flight.tripCRD = tripStats[0]?.tripCRD
+        })
+
+
+        const lastFlight = flights[flights.length - 1]
+        const lastFlightOfPreviousSchedule = scheduleData.schedules[scheduleIndex - 1].flights[scheduleData.schedules[scheduleIndex - 1].flights.length - 1]
+
+        // console.log(lastFlight?.week, 'lastFlight?.week')
+        // console.log(lastFlightOfPreviousSchedule?.week, lastFlight?.week, 'lastFlightOfPreviousSchedule')
+        // console.log(lastFlightOfPreviousSchedule?.week == lastFlight?.week, 'lastFlightOfPreviousSchedule?.week == lastFlight?.week')
+
+        if (lastFlightOfPreviousSchedule?.week == lastFlight?.week) {
+            tripStats.shift()
+        }
+
+        const stats = {
+            dayBLKT: lastFlight.tblk,
+            dayCRD: lastFlight.tcrd,
+            tripBLKT: tripStats[0]?.tripBLKT,
+            tripCRD: tripStats[0]?.tripCRD,
+            dayDuty: lastFlight.tduty
+        }
+
 
         scheduleData.schedules[scheduleIndex].flights = flights
         scheduleData.schedules[scheduleIndex].hotel = hotel
-        // scheduleData.schedules[scheduleIndex].stats = stats
+        scheduleData.schedules[scheduleIndex].stats = stats
     })
 
 

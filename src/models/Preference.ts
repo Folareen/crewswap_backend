@@ -36,3 +36,42 @@ const Preference = sequelizeInstance.define('Preference', {
 
 
 export default Preference
+
+// const Preference = sequelizeInstance.define('Preference', {
+//     userId: {
+//         type: UUID,
+//         allowNull: false,
+//     },
+//     weekendsOff: {
+//         type: BOOLEAN
+//     },
+//     lessAirportSits: {
+//         type: BOOLEAN
+//     },
+//     thirtyHourlayover: {
+//         type: BOOLEAN
+//     },
+//     moreCredits: {
+//         type: BOOLEAN
+//     },
+//     commutable: {
+//         type: BOOLEAN
+//     },
+//     lateCheckIn: {
+//         type: BOOLEAN
+//     },
+//     stackTripsTogether: {
+//         type: BOOLEAN
+//     },
+//     noMexicoLayovers: {
+//         type: BOOLEAN
+//     },
+//     moreDaysOff: {
+//         type: BOOLEAN
+//     },
+//     datesOff: {
+//         type: JSON
+//     }
+// }, {
+//     timestamps: true
+// })

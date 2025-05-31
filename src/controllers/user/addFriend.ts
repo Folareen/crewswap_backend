@@ -1,77 +1,62 @@
 import { Response } from "express";
 import Chat, { ChatType } from "../../models/Chat";
-import Message from "../../models/Message";
 import User from "../../models/User";
 import { AuthenticatedReq } from "../../types/authenticatedReq";
-import validateData from "../../utils/validators/schedule/likeSchedule";
-import Schedule from "../../models/Schedule";
 import { Op } from "sequelize";
+
 
 export default async (req: AuthenticatedReq, res: Response) => {
     try {
+        const { userId } = req.params
 
-        const validatedData = validateData(req.body)
-
-        const scheduleId = validatedData?.scheduleId
-
-        console.log(scheduleId, 'scheduleId')
-
-        if (!scheduleId) {
-            res.status(400).json({ message: 'Schedule ID is required' })
+        if (!userId) {
+            res.status(400).json({ message: 'User ID is required' })
             return
         }
 
-        const schedule = await Schedule.findByPk(scheduleId)
-
-        if (!schedule) {
-            res.status(400).json({ message: 'Schedule not found' })
-            return
-        }
-
-        const user = await User.findByPk(schedule.dataValues.userId)
+        const user = await User.findByPk(req.user?.id)
 
         if (!user) {
             res.status(400).json({ message: 'User not found' })
             return
         }
 
-        const chatExists = await Chat.findOne({
+        const friendExists = await Chat.findOne({
             where: {
-                type: ChatType.SWAP_BUDDIES,
+                type: ChatType.FRIENDS,
                 [Op.or]: [
                     {
                         member1: req.user?.id,
-                        member2: user.dataValues.id
+                        member2: userId
                     },
                     {
-                        member1: user.dataValues.id,
+                        member1: userId,
                         member2: req.user?.id
                     }
                 ]
             }
         })
 
-        if (chatExists) {
+        if (friendExists) {
             res.status(200).json({
-                message: 'Swap buddies already connected',
+                message: 'Friend already exists',
                 user: {
                     id: user.dataValues.id,
                     firstName: user.dataValues.firstName,
                     lastName: user.dataValues.lastName
                 },
-                chat: chatExists.dataValues
+                chat: friendExists.dataValues
             })
             return
         }
 
         const chat = await Chat.create({
-            type: ChatType.SWAP_BUDDIES,
-            member1: req.user?.id,
-            member2: user.dataValues.id
+            type: ChatType.FRIENDS,
+            members: [req.user?.id, userId]
         })
 
-        res.status(201).json({
-            message: 'Schedule liked successfully',
+        res.status(200).json({
+            message: 'Friend added successfully',
             user: {
                 id: user.dataValues.id,
                 firstName: user.dataValues.firstName,
@@ -79,16 +64,8 @@ export default async (req: AuthenticatedReq, res: Response) => {
             },
             chat: chat.dataValues
         })
-        return
-
     } catch (error: any) {
-        if (error?.type == 'validation') {
-            res.status(400).json({
-                message: error?.message
-            })
-            return;
-        }
-
+        console.log(error, 'error')
 
         res.status(500).json({ message: 'Internal server error' })
         return

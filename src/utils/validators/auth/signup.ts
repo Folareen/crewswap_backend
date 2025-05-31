@@ -15,14 +15,15 @@ const signupSchema = z.object({
         .refine((password) => /[!@#$%^&*]/.test(password), {
             message: "Password must contain atleast one special character",
         }),
-    displayName: z.string({ required_error: "Display name is required" })
-        .min(1, "Display name is required"),
     baseAirport: z.string({ required_error: "Base airport is required" })
         .min(1, "Base airport is required"),
     airline: z.string({ required_error: "Airline is required" })
         .min(1, "Airline is required"),
-    userType: z.enum(["pilot", "flightAttendant"], {
-        errorMap: () => ({ message: "User type must be either 'pilot' or 'flightAttendant'" }),
+    userType: z.enum(["pilot", "flight-attendant"], {
+        errorMap: () => ({ message: "User type must be either 'pilot' or 'flight-attendant'" }),
+    }),
+    timeFormat: z.enum(["24h", "12h"], {
+        errorMap: () => ({ message: "Time format must be either '24h' or '12h'" }),
     }),
 })
 

@@ -16,7 +16,12 @@ export default async (req: Request, res: Response) => {
 
         const { email, password } = data
 
-        const user = await User.findOne({ where: { email } })
+        const user = await User.findOne({
+            where: { email },
+            attributes: { include: ['password'] }
+        })
+
+        console.log(user, 'user')
         if (!user) {
             res.status(400).json({ message: "Incorrect email or password" })
             return;
@@ -32,8 +37,13 @@ export default async (req: Request, res: Response) => {
         const tokenPayload = {
             id: user.getDataValue("id"),
             email: user.getDataValue("email"),
-            displayName: user.getDataValue("displayName"),
+            firstName: user.getDataValue("firstName"),
+            lastName: user.getDataValue("lastName"),
+            baseAirport: user.getDataValue("baseAirport"),
+            airline: user.getDataValue("airline"),
             userType: user.getDataValue("userType"),
+            position: user.getDataValue("position"),
+            timeFormat: user.getDataValue("timeFormat"),
         }
 
         const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string)
@@ -48,6 +58,7 @@ export default async (req: Request, res: Response) => {
         })
         return;
     } catch (error: any) {
+
         if (error?.type == 'validation') {
             res.status(400).json({
                 message: error?.message

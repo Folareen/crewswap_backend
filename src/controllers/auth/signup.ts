@@ -6,6 +6,7 @@ import validateSignup from '../../utils/validators/auth/signup'
 import scrapeFlicaSchedule from "../../utils/scrapeFlicaSchedule"
 import Schedule from "../../models/Schedule"
 import Preference from "../../models/Preference"
+import scrapeFlicaUserDetails from "../../utils/scrapeFlicaUserDetails"
 
 // validate requestsss
 
@@ -34,16 +35,30 @@ export default async (req: Request, res: Response) => {
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
+        // const flicaUserDetails = await scrapeFlicaUserDetails(flicaContent)
+        const flicaUserDetails = {
+            id: 577976,
+            firstName: 'Brian',
+            lastName: 'Thurman',
+            position: 'FO',
+        }
+
         const user = await User.create({
             ...userDetails,
             password: hashedPassword,
+            ...flicaUserDetails
         })
 
         const tokenPayload = {
             id: user.getDataValue("id"),
             email: user.getDataValue("email"),
-            displayName: user.getDataValue("displayName"),
-            role: user.getDataValue("userType"),
+            firstName: user.getDataValue("firstName"),
+            lastName: user.getDataValue("lastName"),
+            baseAirport: user.getDataValue("baseAirport"),
+            airline: user.getDataValue("airline"),
+            userType: user.getDataValue("userType"),
+            position: user.getDataValue("position"),
+            timeFormat: user.getDataValue("timeFormat"),
         }
 
         const token = jwt.sign(tokenPayload, process.env.JWT_SECRET as string)
