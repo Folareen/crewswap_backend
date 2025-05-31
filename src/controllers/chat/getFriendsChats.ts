@@ -1,6 +1,5 @@
-
 import { Response } from "express";
-import { Op } from "sequelize";
+import { Op, fn, col, where } from "sequelize";
 import Chat, { ChatType } from "../../models/Chat";
 import { AuthenticatedReq } from "../../types/authenticatedReq";
 import Message from "../../models/Message";
@@ -15,13 +14,11 @@ export default async (req: AuthenticatedReq, res: Response) => {
         const chats = await Chat.findAll({
             where: {
                 type: ChatType.FRIENDS,
-                [Op.or]: [
-                    {
-                        member1: userId,
-                    },
-                    {
-                        member2: userId
-                    }
+                [Op.and]: [
+                    where(
+                        fn('JSON_CONTAINS', col('members'), JSON.stringify(userId)),
+                        true
+                    )
                 ]
             },
             order: [['createdAt', 'DESC']]
@@ -35,7 +32,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
         })
 
         const chatsData = await Promise.all(chats.map(async (chat) => {
-            const otherMember = chat.dataValues.member1 === userId ? chat.dataValues.member2 : chat.dataValues.member1
+            const otherMember = chat.dataValues.members.find((id: number) => id !== userId)
             const lastMessage = await Message.findOne({
                 where: {
                     chatId: chat.dataValues.id

@@ -1,7 +1,5 @@
-
-
 import { Response } from "express";
-import { Op } from "sequelize";
+import { Op, fn, col, where } from "sequelize";
 import Chat, { ChatType } from "../../models/Chat";
 import { AuthenticatedReq } from "../../types/authenticatedReq";
 import Message from "../../models/Message";
@@ -11,8 +9,6 @@ export default async (req: AuthenticatedReq, res: Response) => {
     try {
         const userId = req.user?.id
 
-        console.log(userId, 'userId')
-
         const chats = await Chat.findAll({
             where: {
                 type: {
@@ -21,40 +17,18 @@ export default async (req: AuthenticatedReq, res: Response) => {
                         ChatType.CREW_GROUP
                     ]
                 },
-                [Op.or]: [
-                    {
-                        members: {
-                            [Op.contains]: userId
-                        }
-                    }
+                [Op.and]: [
+                    where(
+                        fn('JSON_CONTAINS', col('members'), JSON.stringify(userId)),
+                        true
+                    )
                 ]
-            },
-            order: [['createdAt', 'DESC']],
-            include: [
-                {
-                    model: User,
-                    as: 'memberOne',
-                    attributes: ['id', 'firstName', 'lastName']
-                },
-                {
-                    model: User,
-                    as: 'memberTwo',
-                    attributes: ['id', 'firstName', 'lastName']
-                }
-            ]
-        })
-
-        console.log(chats, 'chats')
-
-        const lastMessage = await Message.findOne({
-            where: {
-                chatId: chats[0].dataValues.id
-            },
-            order: [['createdAt', 'DESC']]
+            }
         })
 
         const chatsData = await Promise.all(chats.map(async (chat) => {
-            const otherMember = chat.dataValues.member1 === userId ? chat.dataValues.member2 : chat.dataValues.member1
+            const otherMember = chat.dataValues.members.find((id: number) => id !== userId)
+
             const lastMessage = await Message.findOne({
                 where: {
                     chatId: chat.dataValues.id
@@ -81,8 +55,10 @@ export default async (req: AuthenticatedReq, res: Response) => {
                 lastMessage: lastMessage?.dataValues.message,
                 lastMessageTime: lastMessage?.dataValues.createdAt,
                 userType: user?.dataValues.userType,
+                chatType: chat.dataValues.type,
                 unreadMessages,
-                otherMemberDetails: user?.dataValues
+                otherMemberDetails: user?.dataValues,
+                chatName: chat.dataValues.type === ChatType.CREW_GROUP ? chat.dataValues.name : user?.dataValues.firstName + ' ' + user?.dataValues.lastName
             }
         }))
 

@@ -2,7 +2,7 @@ import { Response } from "express";
 import Chat, { ChatType } from "../../models/Chat";
 import User from "../../models/User";
 import { AuthenticatedReq } from "../../types/authenticatedReq";
-import { Op } from "sequelize";
+import { Op, fn, col, where } from "sequelize";
 
 
 export default async (req: AuthenticatedReq, res: Response) => {
@@ -14,9 +14,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
             return
         }
 
-        const userId = member.slice(3, member.length).split(' ')[0] ? Number(member.slice(3, member.length).split(' ')[0]) : null
-
-        console.log(userId, 'userId')
+        const userId = member.match(/\d+/)?.[0] ? Number(member.match(/\d+/)[0]) : null
 
         if (!userId) {
             res.status(400).json({ message: 'Invalid crew member name' })
@@ -30,10 +28,6 @@ export default async (req: AuthenticatedReq, res: Response) => {
             return
         }
 
-        console.log(user.dataValues, 'user')
-
-        console.log(req.user?.id, 'req.user?.id')
-
         if (req.user?.id && userId == req.user?.id) {
             res.status(400).json({ message: 'You cannot create a chat with yourself' })
             return
@@ -42,15 +36,15 @@ export default async (req: AuthenticatedReq, res: Response) => {
         const crewChatExists = await Chat.findOne({
             where: {
                 type: ChatType.CREW,
-                [Op.or]: [
-                    {
-                        member1: req.user?.id,
-                        member2: userId
-                    },
-                    {
-                        member1: userId,
-                        member2: req.user?.id
-                    }
+                [Op.and]: [
+                    where(
+                        fn('JSON_CONTAINS', col('members'), JSON.stringify(req.user?.id)),
+                        true
+                    ),
+                    where(
+                        fn('JSON_CONTAINS', col('members'), JSON.stringify(userId)),
+                        true
+                    )
                 ]
             }
         })
@@ -70,8 +64,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
         const chat = await Chat.create({
             type: ChatType.CREW,
-            member1: req.user?.id,
-            member2: userId
+            members: [req.user?.id, userId]
         })
 
         res.status(200).json({

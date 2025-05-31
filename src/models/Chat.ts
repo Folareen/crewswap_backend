@@ -18,14 +18,6 @@ const Chat = sequelizeInstance.define('Chat', {
         type: DataTypes.ENUM(...Object.values(ChatType)),
         allowNull: false,
     },
-    member1: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
-    member2: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
     members: {
         type: DataTypes.JSON,
         allowNull: true,

@@ -3,18 +3,18 @@ import { Op, fn, col, where } from "sequelize";
 import Chat, { ChatType } from "../../models/Chat";
 import { AuthenticatedReq } from "../../types/authenticatedReq";
 import Message from "../../models/Message";
-import Schedule from "../../models/Schedule";
 import User from "../../models/User";
 
 export default async (req: AuthenticatedReq, res: Response) => {
     try {
+        console.log(req.params, 'req.params')
         const userId = req.user?.id
 
         const chatId = req.params.id
 
         const chat = await Chat.findOne({
             where: {
-                type: ChatType.FRIENDS,
+                type: ChatType.CREW_GROUP,
                 id: chatId,
                 [Op.and]: [
                     where(
@@ -44,42 +44,24 @@ export default async (req: AuthenticatedReq, res: Response) => {
             ]
         })
 
-        console.log(messages, 'messages')
-
-        const otherMember = chat.dataValues.members.find((id: number) => id !== userId)
-
-        const otherMemberDetails = await User.findOne({
-            where: {
-                id: otherMember
-            }
-        })
-
-        console.log(otherMemberDetails, 'otherMemberDetails')
-
-        const schedule = await Schedule.findOne({
-            where: {
-                userId: otherMemberDetails?.dataValues?.id
-            }
-        })
 
         res.status(200).json({
             message: 'Chat fetched successfully',
             chat: {
                 id: chat.dataValues.id,
-                userId: otherMember,
-                otherMemberDetails: otherMemberDetails?.dataValues,
+                name: chat.dataValues.name,
+                members: chat.dataValues.members,
                 messages: messages.map((message) => {
                     return {
                         id: message.dataValues.id,
                         text: message.dataValues.text,
                         createdAt: message.dataValues.createdAt,
                         senderId: message.dataValues.senderId,
-                        senderName: '',
+                        senderName: message.dataValues.sender.firstName + ' ' + message.dataValues.sender.lastName,
                         read: message.dataValues.read
                     }
                 }),
             },
-            schedule: schedule?.dataValues
         })
         return
 

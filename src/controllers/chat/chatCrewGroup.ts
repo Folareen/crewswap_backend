@@ -2,11 +2,12 @@ import { Response } from "express";
 import Chat, { ChatType } from "../../models/Chat";
 import User from "../../models/User";
 import { AuthenticatedReq } from "../../types/authenticatedReq";
-import { Op } from "sequelize";
+import { Op, fn, col, where } from "sequelize";
 
 
 export default async (req: AuthenticatedReq, res: Response) => {
     try {
+        console.log(req.body, 'req.body')
         const { crewMembers, flightRoute, flightNumber } = req.body
 
         if (!crewMembers || !flightRoute) {
@@ -14,20 +15,21 @@ export default async (req: AuthenticatedReq, res: Response) => {
             return
         }
 
-        console.log(crewMembers, 'crewMembers')
-
         const userIds = crewMembers.map((member: string) => {
 
-            const userId = member.slice(3, member.length).split(' ')[0] ? Number(member.slice(3, member.length).split(' ')[0]) : null
+            const matches = member.match(/\d+/);
+            const userId = matches ? Number(matches[0]) : null;
+
+            console.log(userId, 'userId')
             return userId
         })
-
-        console.log(userIds, 'userIds')
 
         if (!userIds.length) {
             res.status(400).json({ message: 'Invalid crew members' })
             return
         }
+
+        console.log(userIds, 'userIds')
 
         const users = await User.findAll({
             where: {
@@ -45,7 +47,11 @@ export default async (req: AuthenticatedReq, res: Response) => {
         const crewChatExists = await Chat.findOne({
             where: {
                 type: ChatType.CREW_GROUP,
-                name: `Group Chat ${flightNumber} ${flightRoute}`
+                name: `Group Chat ${flightNumber} ${flightRoute}`,
+                [Op.and]: userIds.map((id: number) => where(
+                    fn('JSON_CONTAINS', col('members'), JSON.stringify(id)),
+                    true
+                ))
             }
         })
 
@@ -59,8 +65,6 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
         const chat = await Chat.create({
             type: ChatType.CREW_GROUP,
-            member1: userIds[0],
-            member2: userIds[1],
             members: userIds,
             name: `Group Chat ${flightNumber} ${flightRoute}`
         })

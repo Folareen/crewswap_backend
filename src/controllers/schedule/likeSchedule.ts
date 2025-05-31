@@ -5,7 +5,7 @@ import User from "../../models/User";
 import { AuthenticatedReq } from "../../types/authenticatedReq";
 import validateData from "../../utils/validators/schedule/likeSchedule";
 import Schedule from "../../models/Schedule";
-import { Op } from "sequelize";
+import { Op, fn, col, where } from "sequelize";
 
 export default async (req: AuthenticatedReq, res: Response) => {
     try {
@@ -28,6 +28,11 @@ export default async (req: AuthenticatedReq, res: Response) => {
             return
         }
 
+        if (schedule.dataValues.userId == req.user?.id) {
+            res.status(400).json({ message: 'You cannot like your own schedule' })
+            return
+        }
+
         const user = await User.findByPk(schedule.dataValues.userId)
 
         if (!user) {
@@ -38,15 +43,15 @@ export default async (req: AuthenticatedReq, res: Response) => {
         const chatExists = await Chat.findOne({
             where: {
                 type: ChatType.SWAP_BUDDIES,
-                [Op.or]: [
-                    {
-                        member1: req.user?.id,
-                        member2: user.dataValues.id
-                    },
-                    {
-                        member1: user.dataValues.id,
-                        member2: req.user?.id
-                    }
+                [Op.and]: [
+                    where(
+                        fn('JSON_CONTAINS', col('members'), JSON.stringify(req.user?.id)),
+                        true
+                    ),
+                    where(
+                        fn('JSON_CONTAINS', col('members'), JSON.stringify(user.dataValues.id)),
+                        true
+                    )
                 ]
             }
         })
@@ -66,8 +71,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
         const chat = await Chat.create({
             type: ChatType.SWAP_BUDDIES,
-            member1: req.user?.id,
-            member2: user.dataValues.id
+            members: [req.user?.id, user.dataValues.id]
         })
 
         res.status(201).json({

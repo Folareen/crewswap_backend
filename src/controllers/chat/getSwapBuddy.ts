@@ -14,7 +14,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
         const chat = await Chat.findOne({
             where: {
-                type: ChatType.FRIENDS,
+                type: ChatType.SWAP_BUDDIES,
                 id: chatId,
                 [Op.and]: [
                     where(
@@ -74,7 +74,6 @@ export default async (req: AuthenticatedReq, res: Response) => {
                         text: message.dataValues.text,
                         createdAt: message.dataValues.createdAt,
                         senderId: message.dataValues.senderId,
-                        senderName: '',
                         read: message.dataValues.read
                     }
                 }),

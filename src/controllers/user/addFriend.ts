@@ -2,14 +2,16 @@ import { Response } from "express";
 import Chat, { ChatType } from "../../models/Chat";
 import User from "../../models/User";
 import { AuthenticatedReq } from "../../types/authenticatedReq";
-import { Op } from "sequelize";
+import { col, fn, Op, where } from "sequelize";
 
 
 export default async (req: AuthenticatedReq, res: Response) => {
     try {
-        const { userId } = req.params
+        const { id } = req.params
 
-        if (!userId) {
+        console.log(id, 'id')
+
+        if (!id) {
             res.status(400).json({ message: 'User ID is required' })
             return
         }
@@ -24,15 +26,15 @@ export default async (req: AuthenticatedReq, res: Response) => {
         const friendExists = await Chat.findOne({
             where: {
                 type: ChatType.FRIENDS,
-                [Op.or]: [
-                    {
-                        member1: req.user?.id,
-                        member2: userId
-                    },
-                    {
-                        member1: userId,
-                        member2: req.user?.id
-                    }
+                [Op.and]: [
+                    where(
+                        fn('JSON_CONTAINS', col('members'), JSON.stringify(req.user?.id)),
+                        true
+                    ),
+                    where(
+                        fn('JSON_CONTAINS', col('members'), JSON.stringify(id)),
+                        true
+                    )
                 ]
             }
         })
@@ -52,7 +54,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
         const chat = await Chat.create({
             type: ChatType.FRIENDS,
-            members: [req.user?.id, userId]
+            members: [req.user?.id, id]
         })
 
         res.status(200).json({
