@@ -10,6 +10,8 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
         const userPreference = await Preference.findOne({ where: { userId } })
 
+        console.log(userPreference, 'userPreference')
+
         if (!userPreference) {
             res.status(400).json({ message: 'Update your preferences first' })
             return
@@ -17,35 +19,68 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
         const userPreferenceObj = userPreference.dataValues
 
-        Object.entries(userPreferenceObj).forEach(([key, value]) => {
-            if (value === null) {
-                delete userPreferenceObj[key]
-            }
-        })
+        console.log(userPreferenceObj, 'userPreferenceObj')
+        console.log(Object.entries(userPreferenceObj), 'entries')
 
-        delete userPreferenceObj.userId
-        delete userPreferenceObj.createdAt
-        delete userPreferenceObj.updatedAt
-        delete userPreferenceObj.id
+        // Separate datesOff from other preferences
+        const { datesOff, ...otherPreferences } = userPreferenceObj
 
-        const oppositeConditions = Object.entries(userPreferenceObj)
-            .filter(([_, value]) => typeof value === 'boolean')
+        // Remove null/undefined values and system fields from other preferences
+        const userSetPreferences = Object.entries(otherPreferences)
+            .filter(([key, value]) =>
+                value !== null &&
+                value !== undefined &&
+                !['userId', 'createdAt', 'updatedAt', 'id'].includes(key)
+            )
+            .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+
+        console.log(userSetPreferences, 'userSetPreferences')
+
+        // Create opposite conditions for boolean preferences
+        const oppositeConditions = Object.entries(userSetPreferences)
             .map(([key, value]) => ({
                 [key]: !value
             }))
 
-        if (userPreferenceObj.datesOff && userPreferenceObj.datesOff.length > 0) {
-            oppositeConditions.push({ datesOff: userPreferenceObj.datesOff })
+        // Add datesOff condition if it exists
+        if (datesOff && Array.isArray(datesOff) && datesOff.length > 0) {
+            // Find users who have completely different dates off (no overlap)
+            oppositeConditions.push({
+                [Op.and]: [
+                    { datesOff: { [Op.not]: null } }, // Ensure datesOff exists
+                    { datesOff: { [Op.not]: [] } },   // Ensure datesOff is not empty
+                    {
+                        datesOff: {
+                            [Op.not]: {
+                                [Op.overlap]: datesOff // This will match users who have NO dates in common
+                            }
+                        }
+                    }
+                ]
+            })
         }
 
+        console.log(oppositeConditions, 'oppositeConditions')
+
+        // Find users who have set the same fields with opposite values
         const matchingPreferences = await Preference.findAll({
             where: {
-                [Op.or]: oppositeConditions,
+                [Op.and]: [
+                    // Must have opposite values for all fields the user set
+                    { [Op.or]: oppositeConditions },
+                    // Must have null/undefined for all other preference fields (except datesOff)
+                    ...Object.keys(Preference.getAttributes())
+                        .filter(key =>
+                            !['userId', 'createdAt', 'updatedAt', 'id', 'datesOff'].includes(key) &&
+                            !Object.keys(userSetPreferences).includes(key)
+                        )
+                        .map(key => ({ [key]: null }))
+                ],
                 userId: { [Op.ne]: userId }
             }
         })
 
-
+        console.log(matchingPreferences?.map(preference => preference.dataValues), 'matchingPreferences')
 
         const preferredSchedules = await Promise.all(matchingPreferences.map(async (preference) => {
             return Schedule.findOne({ where: { userId: preference.dataValues.userId } })

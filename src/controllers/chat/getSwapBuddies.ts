@@ -26,15 +26,8 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
         console.log(chats, 'chats')
 
-        const lastMessage = await Message.findOne({
-            where: {
-                chatId: chats[0].dataValues.id
-            },
-            order: [['createdAt', 'DESC']]
-        })
-
         const chatsData = await Promise.all(chats.map(async (chat) => {
-            const otherMember = chat.dataValues.members.find((id: number) => id !== userId)
+            const otherMember = chat?.dataValues?.members?.find((id: number) => id !== userId)
             const lastMessage = await Message.findOne({
                 where: {
                     chatId: chat.dataValues.id
@@ -51,7 +44,10 @@ export default async (req: AuthenticatedReq, res: Response) => {
             const unreadMessages = await Message.count({
                 where: {
                     chatId: chat.dataValues.id,
-                    read: false
+                    read: false,
+                    senderId: {
+                        [Op.ne]: userId
+                    }
                 }
             })
 
@@ -67,7 +63,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
         }))
 
         res.status(200).json({
-            message: 'Chats fetched successfully', chats: chatsData
+            message: 'Chats fetched successfully', chats: chatsData,
         })
         return
 

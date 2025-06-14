@@ -35,13 +35,20 @@ export default async (req: Request, res: Response) => {
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        // const flicaUserDetails = await scrapeFlicaUserDetails(flicaContent)
-        const flicaUserDetails = {
-            id: 577976,
-            firstName: 'Brian',
-            lastName: 'Thurman',
-            position: 'FO',
+        const flicaUserDetails = await scrapeFlicaUserDetails(flicaContent)
+
+        const flicaIdUsed = await User.findOne({ where: { flicaId: flicaUserDetails.id } })
+        if (flicaIdUsed) {
+            res.status(409).json({ message: "User with this flica id already exists" })
+            return
         }
+
+        // const flicaUserDetails = {
+        //     id: 577976,
+        //     firstName: 'Brian',
+        //     lastName: 'Thurman',
+        //     position: 'FO',
+        // }
 
         const user = await User.create({
             ...userDetails,

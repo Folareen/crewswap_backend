@@ -1,13 +1,15 @@
 import { ZodError, array, boolean, date, object, string } from "zod"
 
 const updatePreferenceSchema = object({
-    lessAirpotsSits: boolean().optional(),
-    layovers: boolean().optional(),
+    weekendsOff: boolean().optional(),
+    lessSits: boolean().optional(),
+    thirtyLayover: boolean().optional(),
     moreCredits: boolean().optional(),
     commutable: boolean().optional(),
     lateCheckIn: boolean().optional(),
-    earlyCheckOut: boolean().optional(),
+    stackTripsTogether: boolean().optional(),
     noMexicoLayovers: boolean().optional(),
+    moreDaysOff: boolean().optional(),
     datesOff: array(string()).optional()
 })
 

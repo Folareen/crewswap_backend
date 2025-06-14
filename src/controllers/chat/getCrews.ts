@@ -27,7 +27,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
         })
 
         const chatsData = await Promise.all(chats.map(async (chat) => {
-            const otherMember = chat.dataValues.members.find((id: number) => id !== userId)
+            const otherMember = chat?.dataValues?.members?.find((id: number) => id !== userId)
 
             const lastMessage = await Message.findOne({
                 where: {
@@ -45,7 +45,10 @@ export default async (req: AuthenticatedReq, res: Response) => {
             const unreadMessages = await Message.count({
                 where: {
                     chatId: chat.dataValues.id,
-                    read: false
+                    read: false,
+                    senderId: {
+                        [Op.ne]: userId
+                    }
                 }
             })
 

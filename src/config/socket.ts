@@ -147,11 +147,11 @@ const setupSocket = (server: HttpServer) => {
                     { where: { id: messageId } }
                 )
 
-                io.to(`chat_${chatId}`).emit('message_read', {
-                    messageId,
-                    chatId,
-                    readBy: socket.id
-                })
+                // io.to(`chat_${chatId}`).emit('message_read', {
+                //     messageId,
+                //     chatId,
+                //     readBy: socket.id
+                // })
 
             } catch (error) {
                 console.error('Error marking message as read:', error)

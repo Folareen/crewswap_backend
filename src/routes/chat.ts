@@ -9,7 +9,8 @@ import getSwapBuddy from "../controllers/chat/getSwapBuddy";
 import authenticate from "../middlewares/authenticate";
 import getCrewGroup from "../controllers/chat/getCrewGroup";
 import getCrew from "../controllers/chat/getCrew";
-
+import markAllMessagesAsRead from "../controllers/chat/markAllMessagesAsRead";
+import { deleteChat } from "../controllers/chat/deleteChat";
 const router = Router()
 
 router.route('/swap-buddies').get(authenticate, getSwapBuddies)
@@ -21,5 +22,7 @@ router.route('/crew/:id').get(authenticate, getCrew)
 router.route('/crew-group').post(authenticate, chatCrewGroup)
 router.route('/crew-group/:id').get(authenticate, getCrewGroup)
 router.route('/crews').get(authenticate, getCrews)
+router.route('/chats/:chatId/read').post(authenticate, markAllMessagesAsRead)
+router.route('/chats/:chatId').delete(authenticate, deleteChat)
 
 export default router

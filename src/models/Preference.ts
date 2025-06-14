@@ -6,10 +6,13 @@ const Preference = sequelizeInstance.define('Preference', {
         type: UUID,
         allowNull: false,
     },
-    lessAirportSits: {
+    weekendsOff: {
         type: BOOLEAN
     },
-    layovers: {
+    lessSits: {
+        type: BOOLEAN
+    },
+    thirtyLayover: {
         type: BOOLEAN
     },
     moreCredits: {
@@ -21,10 +24,13 @@ const Preference = sequelizeInstance.define('Preference', {
     lateCheckIn: {
         type: BOOLEAN
     },
-    earlyCheckOut: {
+    stackTripsTogether: {
         type: BOOLEAN
     },
     noMexicoLayovers: {
+        type: BOOLEAN
+    },
+    moreDaysOff: {
         type: BOOLEAN
     },
     datesOff: {

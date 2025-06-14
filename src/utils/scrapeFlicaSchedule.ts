@@ -129,6 +129,7 @@ export default async (flicaContent: string, userId: number) => {
             const columns = $(row).find('td');
             const colsLength = columns.length
 
+            // report should minus in time format
             const flight = {
                 week: index,
                 dy: purifyText($(columns[0]).text()),
@@ -229,7 +230,6 @@ export default async (flicaContent: string, userId: number) => {
         scheduleData.schedules[scheduleIndex].hotel = hotel
         scheduleData.schedules[scheduleIndex].stats = stats
     })
-
 
     return scheduleData
 }

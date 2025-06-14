@@ -13,7 +13,7 @@ import userRouter from './src/routes/user'
 import sequelizeInstance from './src/config/database';
 import chatRouter from './src/routes/chat';
 import setupSocket from './src/config/socket';
-
+import othersRouter from './src/routes/others';
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -23,6 +23,7 @@ app.use('/api/v1/', scheduleRouter)
 app.use('/api/v1/', preferenceRouter)
 app.use('/api/v1/', userRouter)
 app.use('/api/v1/', chatRouter)
+app.use('/api/v1/', othersRouter)
 app.use(notFound)
 
 const PORT = process.env.PORT || 5000;

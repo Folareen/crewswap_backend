@@ -11,12 +11,15 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
         const existingPreference = await Preference.findOne({ where: { userId: req.user?.id } })
 
+        console.log(data, 'data')
 
         if (existingPreference) {
             await Preference.update({ ...data }, { where: { userId: req.user?.id } })
         } else {
             await Preference.create({ ...data, userId: req?.user?.id, })
         }
+
+        console.log('preference updated', existingPreference)
 
         res.status(200).json({
             message: "Preferences updated"

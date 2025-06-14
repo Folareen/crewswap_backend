@@ -74,7 +74,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
             members: [req.user?.id, user.dataValues.id]
         })
 
-        res.status(201).json({
+        res.status(200).json({
             message: 'Schedule liked successfully',
             user: {
                 id: user.dataValues.id,
