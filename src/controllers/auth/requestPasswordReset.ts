@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import User from "../../models/User"
-import Otp from "../../models/Otp"
+import Otp, { ActionType } from "../../models/Otp"
 import nodemailer from 'nodemailer'
 import validateData from '../../utils/validators/auth/requestPasswordReset'
 
@@ -70,12 +70,14 @@ export default async (req: Request, res: Response) => {
     }
 
     const otpCode = Math.floor(1000 + Math.random() * 9000).toString()
+
+    console.log(otpCode, 'otp code')
     const sentAt = new Date()
 
     const otp = Otp.build({
       userId: user.getDataValue("id"),
       code: otpCode,
-      actionType: "password_reset",
+      actionType: ActionType.PASSWORD_RESET,
       sentAt,
     })
 

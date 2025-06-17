@@ -29,6 +29,8 @@ export default async (req: AuthenticatedReq, res: Response) => {
         const chatsData = await Promise.all(chats.map(async (chat) => {
             const otherMember = chat?.dataValues?.members?.find((id: number) => id !== userId)
 
+            const isCrewGroup = chat.dataValues.type === ChatType.CREW_GROUP
+
             const lastMessage = await Message.findOne({
                 where: {
                     chatId: chat.dataValues.id
@@ -36,7 +38,7 @@ export default async (req: AuthenticatedReq, res: Response) => {
                 order: [['createdAt', 'DESC']]
             })
 
-            const user = await User.findOne({
+            const user = isCrewGroup ? null : await User.findOne({
                 where: {
                     id: otherMember
                 }
@@ -54,14 +56,14 @@ export default async (req: AuthenticatedReq, res: Response) => {
 
             return {
                 id: chat.dataValues.id,
-                userId: otherMember,
+                userId: isCrewGroup ? null : otherMember,
                 lastMessage: lastMessage?.dataValues.message,
                 lastMessageTime: lastMessage?.dataValues.createdAt,
-                userType: user?.dataValues.userType,
+                userType: isCrewGroup ? null : user?.dataValues.userType,
                 chatType: chat.dataValues.type,
                 unreadMessages,
-                otherMemberDetails: user?.dataValues,
-                chatName: chat.dataValues.type === ChatType.CREW_GROUP ? chat.dataValues.name : user?.dataValues.firstName + ' ' + user?.dataValues.lastName
+                otherMemberDetails: isCrewGroup ? null : user?.dataValues,
+                chatName: isCrewGroup ? chat.dataValues.name : user?.dataValues.firstName + ' ' + user?.dataValues.lastName
             }
         }))
 
